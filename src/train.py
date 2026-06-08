@@ -105,6 +105,19 @@ print(f"tokens per iteration will be: {tokens_per_iter:,}")
 
 if master_process:
     os.makedirs(out_dir, exist_ok=True)
+    log_file = os.path.join(out_dir, 'log.txt')
+    with open(log_file, 'w') as f:
+        f.write(f"dataset: {dataset}\n")
+        f.write(f"attn_type: {config.get('attn_type', 'mha')}\n")
+        f.write(f"n_kv_head: {config.get('n_kv_head', config.get('n_head', '-'))}\n")
+        f.write(f"n_head: {config.get('n_head', '-')}\n")
+        f.write(f"n_layer: {config.get('n_layer', '-')}\n")
+        f.write(f"n_embd: {config.get('n_embd', '-')}\n")
+        f.write(f"batch_size: {batch_size}\n")
+        f.write(f"block_size: {block_size}\n")
+        f.write(f"gradient_accumulation_steps: {gradient_accumulation_steps}\n")
+        f.write(f"max_iters: {max_iters}\n")
+        f.write("step,train_loss,val_loss,iter,loss,time_ms,mfu_pct\n")
 torch.manual_seed(1337 + seed_offset)
 torch.backends.cuda.matmul.allow_tf32 = True # allow tf32 on matmul
 torch.backends.cudnn.allow_tf32 = True # allow tf32 on cudnn
@@ -265,6 +278,8 @@ while True:
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+        with open(log_file, 'a') as f:
+            f.write(f"{iter_num},{losses['train']:.4f},{losses['val']:.4f},,,,\n")
         if wandb_log:
             wandb.log({
                 "iter": iter_num,
@@ -327,6 +342,8 @@ while True:
             mfu = raw_model.estimate_mfu(batch_size * gradient_accumulation_steps, dt)
             running_mfu = mfu if running_mfu == -1.0 else 0.9*running_mfu + 0.1*mfu
         print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
+        with open(log_file, 'a') as f:
+            f.write(f",,,{iter_num},{lossf:.4f},{dt*1000:.2f},{running_mfu*100:.2f}\n")
     iter_num += 1
     local_iter_num += 1
 

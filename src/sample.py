@@ -6,6 +6,8 @@ import pickle
 from contextlib import nullcontext
 import torch
 import tiktoken
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 from src.model import GPTConfig, GPT
 
 # -----------------------------------------------------------------------------

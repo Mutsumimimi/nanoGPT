@@ -113,6 +113,8 @@ if master_process:
     with open(log_file, 'w') as f:
         f.write(f"dataset: {dataset}\n")
         f.write(f"attn_type: {config.get('attn_type', 'mha')}\n")
+        f.write(f"norm_type: {config.get('norm_type', 'layernorm')}\n")
+        f.write(f"act_type: {config.get('act_type', 'gelu')}\n")
         f.write(f"n_kv_head: {config.get('n_kv_head', config.get('n_head', '-'))}\n")
         f.write(f"n_head: {config.get('n_head', '-')}\n")
         f.write(f"n_layer: {config.get('n_layer', '-')}\n")

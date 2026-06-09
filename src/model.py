@@ -137,18 +137,24 @@ class MultiQueryAttention(GroupedQueryAttention):
         config.n_kv_head = 1
         super().__init__(config)
 
+_ACT_FACTORY = {
+    'gelu': nn.GELU,
+    'silu': nn.SiLU,
+}
+
+
 class MLP(nn.Module):
 
     def __init__(self, config):
         super().__init__()
         self.c_fc    = nn.Linear(config.n_embd, 4 * config.n_embd, bias=config.bias)
-        self.gelu    = nn.GELU()
+        self.act     = _ACT_FACTORY[config.act_type]()
         self.c_proj  = nn.Linear(4 * config.n_embd, config.n_embd, bias=config.bias)
         self.dropout = nn.Dropout(config.dropout)
 
     def forward(self, x):
         x = self.c_fc(x)
-        x = self.gelu(x)
+        x = self.act(x)
         x = self.c_proj(x)
         x = self.dropout(x)
         return x
@@ -192,6 +198,7 @@ class GPTConfig:
     bias: bool = True # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
     attn_type: str = 'mha'  # 'mha' | 'gqa' | 'mqa'
     norm_type: str = 'layernorm'  # 'layernorm' | 'rmsnorm'
+    act_type: str = 'gelu'  # 'gelu' | 'silu'
     n_kv_head: int = 1      # number of K/V heads for GQA (ignored for mha/mqa)
 
 class GPT(nn.Module):

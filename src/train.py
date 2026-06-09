@@ -59,6 +59,7 @@ bias = False # do we use bias inside LayerNorm and Linear layers?
 attn_type = 'mha' # 'mha' | 'gqa' | 'mqa'
 n_kv_head = 0  # number of K/V heads for GQA; 0 defaults to n_head
 norm_type = 'layernorm' # 'layernorm' | 'rmsnorm'
+act_type = 'gelu' # 'gelu' | 'silu'
 # adamw optimizer
 learning_rate = 6e-4 # max learning rate
 max_iters = 600000 # total number of training iterations
@@ -165,7 +166,7 @@ if os.path.exists(meta_path):
 model_args = dict(n_layer=n_layer, n_head=n_head, n_embd=n_embd, block_size=block_size,
                   bias=bias, vocab_size=None, dropout=dropout,
                   attn_type=attn_type, n_kv_head=n_kv_head if n_kv_head > 0 else n_head,
-                  norm_type=norm_type)
+                  norm_type=norm_type, act_type=act_type)
                 # start with model_args from command line
 if init_from == 'scratch':
     # init a new model from scratch

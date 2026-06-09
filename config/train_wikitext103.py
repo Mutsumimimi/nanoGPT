@@ -7,7 +7,7 @@ log_interval = 10
 
 dataset = 'wikitext103'
 gradient_accumulation_steps = 1
-batch_size = 64
+batch_size = 32
 block_size = 2048
 
 # model: ~55M params
@@ -19,7 +19,7 @@ bias = False
 attn_type = 'mha'
 
 # training
-max_iters = 1000
+max_iters = 500
 lr_decay_iters = 1000
 learning_rate = 6e-4
 min_lr = 6e-5

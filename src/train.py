@@ -57,7 +57,7 @@ n_embd = 768
 dropout = 0.0 # for pretraining 0 is good, for finetuning try 0.1+
 bias = False # do we use bias inside LayerNorm and Linear layers?
 attn_type = 'mha' # 'mha' | 'gqa' | 'mqa'
-n_kv_head = None  # number of K/V heads for GQA; None defaults to n_head
+n_kv_head = 0  # number of K/V heads for GQA; 0 defaults to n_head
 # adamw optimizer
 learning_rate = 6e-4 # max learning rate
 max_iters = 600000 # total number of training iterations
@@ -163,7 +163,7 @@ if os.path.exists(meta_path):
 # model init
 model_args = dict(n_layer=n_layer, n_head=n_head, n_embd=n_embd, block_size=block_size,
                   bias=bias, vocab_size=None, dropout=dropout,
-                  attn_type=attn_type, n_kv_head=n_kv_head if n_kv_head is not None else n_head)
+                  attn_type=attn_type, n_kv_head=n_kv_head if n_kv_head > 0 else n_head)
                 # start with model_args from command line
 if init_from == 'scratch':
     # init a new model from scratch

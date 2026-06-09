@@ -1,6 +1,6 @@
-# MHA baseline
+# GQA experiment: n_head=12, n_kv_head=3
 
-out_dir = 'out-wikitext103-mha'
+out_dir = 'out-wikitext103-gqa'
 eval_interval = 500
 eval_iters = 200
 log_interval = 10
@@ -16,7 +16,8 @@ n_head = 12
 n_embd = 768
 dropout = 0.0
 bias = False
-attn_type = 'mha'
+attn_type = 'gqa'
+n_kv_head = 3
 
 # training
 max_iters = 1000

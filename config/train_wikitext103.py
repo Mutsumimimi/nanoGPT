@@ -7,9 +7,9 @@ eval_iters = 200
 log_interval = 10
 
 dataset = 'wikitext103'
-gradient_accumulation_steps = 4
-batch_size = 16
-block_size = 1024
+gradient_accumulation_steps = 1
+batch_size = 64
+block_size = 2048
 
 # model: ~25M params, small enough for quick experiments
 n_layer = 8
@@ -19,7 +19,7 @@ dropout = 0.0
 bias = False
 
 # training
-max_iters = 10000
+max_iters = 3000
 lr_decay_iters = 10000
 learning_rate = 6e-4
 min_lr = 6e-5
@@ -28,9 +28,9 @@ beta1 = 0.9
 beta2 = 0.95
 grad_clip = 1.0
 
-# GQA config (uncomment to use):
-# attn_type = 'gqa'
-# n_kv_head = 2
+# GQA config:
+attn_type = 'gqa'
+n_kv_head = 2
 
 warmup_iters = 100
 always_save_checkpoint = False

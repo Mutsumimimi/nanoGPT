@@ -1,42 +1,46 @@
 """
 Prepare WikiText-103 dataset for GPT-2 BPE training.
-Downloads via HuggingFace datasets, tokenizes with tiktoken GPT-2 BPE,
-saves train.bin, val.bin, and meta.pkl.
+Reads .parquet files downloaded via hf download, tokenizes
+with tiktoken GPT-2 BPE, saves train.bin, val.bin, and meta.pkl.
 """
 import os
 import pickle
+import glob
 import tiktoken
 import numpy as np
-from datasets import load_dataset
+import pyarrow.parquet as pq
 
-# download WikiText-103
-dataset = load_dataset('wikitext', 'wikitext-103-raw-v1')
+out_dir = os.path.dirname(__file__)
+raw_dir = os.path.join(out_dir, 'wikitext-103-raw-v1')
 
-# encode with GPT-2 BPE tokenizer
+splits = {
+    'train': 'train',
+    'val':   'validation',
+}
+
 enc = tiktoken.get_encoding('gpt2')
 
-def tokenize(examples):
-    return {'ids': [enc.encode_ordinary(text) for text in examples['text']]}
+for name, prefix in splits.items():
+    parquet_files = sorted(glob.glob(os.path.join(raw_dir, f'{prefix}-*.parquet')))
 
-dataset = dataset.map(tokenize, batched=True, remove_columns=['text'])
+    if not parquet_files:
+        raise FileNotFoundError(f'no {prefix}-*.parquet files found in {raw_dir}')
 
-# flatten into single list per split
-def flatten_and_save(split, name):
     ids = []
-    for sample in dataset[split]['ids']:
-        ids.extend(sample)
-        ids.append(enc.eot_token)  # add EOS between articles
+    for pf in parquet_files:
+        table = pq.read_table(pf)
+        for text in table.column('text').to_pylist():
+            if text and text.strip():
+                ids.extend(enc.encode_ordinary(text))
+                ids.append(enc.eot_token)
+
     ids = np.array(ids, dtype=np.uint16)
-    ids.tofile(os.path.join(os.path.dirname(__file__), f'{name}.bin'))
-    print(f"{name} has {len(ids):,} tokens")
+    ids.tofile(os.path.join(out_dir, f'{name}.bin'))
+    print(f'{name}.bin: {len(ids):,} tokens')
 
-flatten_and_save('train', 'train')
-flatten_and_save('validation', 'val')
-
-# save meta
 meta = {'vocab_size': enc.n_vocab}
-with open(os.path.join(os.path.dirname(__file__), 'meta.pkl'), 'wb') as f:
+with open(os.path.join(out_dir, 'meta.pkl'), 'wb') as f:
     pickle.dump(meta, f)
 
-print(f"vocab_size: {enc.n_vocab}")
-print("done")
+print(f'vocab_size: {enc.n_vocab}')
+print('done')
